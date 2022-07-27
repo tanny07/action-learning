@@ -19,10 +19,6 @@ import cv2
 from typing import Union
 import cv2
 import json
-from explainers import get_explanations
-
-
-app = FastAPI(title='Tensorflow FastAPI')
 
 def transform_img_inception(img):
     x = np.expand_dims(img, axis=0)
@@ -68,37 +64,8 @@ def get_scores(predictions,last_prediction):
       break
   return top_prediction, top_pred_score, prediction_type
 
-
-
-
-
-@app.post("/explain")
-async def upload_image(request: Request, file: Union[UploadFile, None] = None):
-    form = await request.form()
-    contents = form["upload_file"].file
-    data  = contents.read()
-    # inet_model = InceptionV3()
-    vgg16_model = VGG16()
-
-    inputShape = (224, 224)
-    image = Image.open(BytesIO(data))
-    image = image.convert("RGB")
-    image = image.resize(inputShape)
-    image = img_to_array(image)
-    prediction, prediction_score, prediction_type = get_predictions('VGG16',vgg16_model,image.copy())
-    
-    explanation_lime = get_explanations('LIME',image,vgg16_model,'VGG16')
-    explanation_custom = get_explanations('CIE_INSPIRATION',image,vgg16_model,'VGG16')
-    return json.dumps({'prediction' : prediction, 'score':str(prediction_score),'heatmap_lime':explanation_lime.tolist(), 'cie_inspiriation':explanation_custom.tolist()}) 
-   
-
-    
-
-#@app.get('/selections')
-#async def selection_and( _1 : str= Query("VGG16", enum = ["VGG16", "Inception"]), _2 : str = Query("Response", enum = ['target', 'response']):
-
-#    return({"task": _1, "target": _2})
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, debug=True)
+def evaluate_pixels(row_start,row_to,column_start,column_to,frame,model_name,model,prediction):
+    # blur = cv2.GaussianBlur(frame[row_start:row_to,column_start:column_to],(3,3),0)
+    frame[row_start:row_to,column_start:column_to] = (0,0,0)
+    top_prediction, top_pred_score, prediction_type = get_predictions(model_name,model,frame,prediction)
+    return top_prediction, top_pred_score, prediction_type
