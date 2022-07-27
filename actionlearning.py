@@ -43,8 +43,8 @@ if selected == 'Home':
     ## In the Benchmark tab you can use 2 pre-trained models which are VGG16 and Inception
     ## In the Creation tab we have created our own explainers to eplain how the model in classifying the image 
     ## In 'Benchmark' and 'Creation' tab, the results include classification score and explainer's heatmap  
-    ## Professors : Prof. Bill Manos and Prof. Alaa Bhakti
-    ## Contributors : Rahul Jaikishen, Utsav Pandey and Tanmay MONDKAR
+    ## Professors : Prof. Bill MANOS and Prof. Alaa BHAKTI
+    ## Contributors : Rahul JAIKISHEN, Utsav PANDEY and Tanmay MONDKAR
     """)
 
 
