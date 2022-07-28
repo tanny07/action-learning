@@ -9,7 +9,7 @@ import json
 from explainers import get_explanations
 from common import get_predictions
 from tensorflow.keras.applications import inception_v3 as inc_net
-
+import cv2
 app = FastAPI(title='Tensorflow FastAPI')
 
 
@@ -37,12 +37,15 @@ async def explain(request: Request, file: Union[UploadFile, None] = None):
 
     explainable_image = img_processed.copy()
     prediction, prediction_score, prediction_type = get_predictions(model_name, model, img_processed.copy())
+    
     explanation_custom = get_explanations('CIE_INSPIRATION', explainable_image, model, model_name)
-    # explanation_custom_2 = get_explanations('FEATURE_EXTRACTION_LAST_LAYER', explainable_image, model, model_name)
-
+    # mask_normed = (explanation_custom - explanation_custom.mean())/(explanation_custom.std())
+    
+    explanation_custom_2 = get_explanations('FEATURE_EXTRACTION_LAST_LAYER', explainable_image, model, model_name)
+    
     return json.dumps(
         {'prediction': prediction, 'score': str(prediction_score),
-         'cie_inspiriation': explanation_custom.tolist()})
+         'cie_inspiriation': explanation_custom.tolist(),'explanation_custom_2':explanation_custom_2.tolist()})
 
 @app.post("/benchmarks")
 async def benchmarks(request: Request, file: Union[UploadFile, None] = None):
