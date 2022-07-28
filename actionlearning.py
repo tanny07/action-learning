@@ -136,9 +136,20 @@ def own_creation():
         with col1:
             st.subheader("Original Image")
             st.image(bytes_data)
-
         with col2:
-            st.subheader("Custom Create Explainer")
+            st.subheader("Custom Explainer 1")
+            heatmap_custom_2 = np.array(val['explanation_custom_2'])
+            fig, ax = plt.subplots()
+            ax.imshow(heatmap_custom_2, cmap='RdBu', vmin=-heatmap_custom_2.max(), vmax=heatmap_custom_2.max())
+            # fig.colorbar(fig)
+            ax.axis('off')
+            st.write(fig)
+
+        with col1:
+            st.subheader("Original Image")
+            st.image(bytes_data)
+        with col2:
+            st.subheader("Custom Explainer 2")
             # heatmap = np.array(val['heatmap_lime'])
             heatmap_custom = np.array(val['cie_inspiriation'])
             fig, ax = plt.subplots()
