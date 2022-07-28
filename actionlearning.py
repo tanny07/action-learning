@@ -1,15 +1,6 @@
-from imp import reload
-from optparse import check_builtin
-from turtle import width
-from typing_extensions import Self
-from sqlalchemy import column
 import streamlit as st
 import numpy as np
-import cv2
-from PIL import Image
-from io import BytesIO
 import pandas as pd
-import urllib
 from config import config
 import requests
 import json
@@ -17,22 +8,26 @@ import matplotlib.pyplot as plt
 from streamlit_option_menu import option_menu
 
 
-# ---- SETUP ----
-def get_explanations(file):
+def get_explanations(file, model_name):
     files = {'upload_file': file}
-    res = requests.post(config['API']['URL']+'/explain', files=files)
+    data = {'model_name': model_name}
+    res = requests.post(config['API']['URL'] + '/explain', data=data, files=files)
     data = []
     if res.status_code == 200:
         data = res.json()
-    return data   
+    return data
 
-def get_benchmarks(file,model_name):
-    files = {'upload_file': file, 'model_name':model_name}
-    res = requests.post(config['API']['URL']+'/benchmarks', files=files)
+
+def get_benchmarks(file, model_name):
+    files = {'upload_file': file}
+    data = {'model_name': model_name}
+    res = requests.post(config['API']['URL'] + '/benchmarks', data=data, files=files)
     data = []
     if res.status_code == 200:
         data = res.json()
-    return data   
+    return data
+
+
 # ---- set page layout ----
 st.set_page_config(
     page_title="Explainable AI in Deep Learning Models for Computer Vision",
@@ -43,10 +38,10 @@ st.set_page_config(
 st.title("Explainable AI in Deep Learning Models for Computer Vision ")
 
 # ---- Navigation bar ---- 
-selected = option_menu(None, ["Home", "Benchmark", "Creations"], 
-    icons=['house', 'cast', 'command'], 
-    menu_icon="cast", default_index=0, orientation="horizontal")
-#selected
+selected = option_menu(None, ["Home", "Benchmark", "Creations"],
+                       icons=['house', 'cast', 'command'],
+                       menu_icon="cast", default_index=0, orientation="horizontal")
+# selected
 
 # ---- Home Page Function ----
 if selected == 'Home':
@@ -61,85 +56,100 @@ if selected == 'Home':
     """)
 
 
-
 # ---- Benchmark Function ----
 def benchmark():
     st.subheader("Upload an Image file")
     col1, col2 = st.columns(2)
-    with col1 :         
+    with col1:
         models_list = ["VGG16", "Inception"]
         network = st.selectbox("Select the Model", models_list)
-    with col2 :
+    with col2:
         uploaded_file = st.file_uploader("Choose an image to classify", type=["jpg", "jpeg", "png"])
-    
+
     col1, col2 = st.columns(2)
- 
-    with col1: clear_benchmark = st.button("Clear Screen")
-    with col2: check_benchmark = st.button("Submit")
-    
+
+    with col1:
+        clear_benchmark = st.button("Clear Screen")
+    with col2:
+        check_benchmark = st.button("Submit")
+
     if check_benchmark:
 
         pred = get_benchmarks(uploaded_file.getvalue(), network)
         val = json.loads(pred)
         st.subheader(f"Top Classification from {network}")
-        st.write(val['score'],val['prediction'], column=('score','classification'))
+        values = [network, val['prediction'], val['score']]
+
+        df = pd.DataFrame([values], columns=['Model Name', 'Image Classification', 'Score'])
+
+        st.table(df)
+        # st.write(df)
 
         bytes_data = uploaded_file.read()
-        col1,col2 = st.columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             st.subheader("Original Image")
-            st.image(bytes_data, width=650)
+            st.image(bytes_data, width=450)
 
         with col2:
             st.subheader("Lime Explainer")
             heatmap = np.array(val['heatmap_lime'])
-            fig, ax = plt.subplots()
-            ax.imshow(heatmap, cmap = 'RdBu', vmin  = -heatmap.max(), vmax = heatmap.max())
+            fig, ax = plt.subplots(figsize=(8, 8), dpi=80)
+            ax.imshow(heatmap, cmap='RdBu', vmin=-heatmap.max(), vmax=heatmap.max())
+            # ax.colorbar()
             ax.axis('off')
             st.write(fig)
 
-        if clear_benchmark :
+        if clear_benchmark:
             st.stop()
+
 
 # ---- Own Created Explainer Function ----
 def own_creation():
-
     st.subheader("Upload an Image file")
     col1, col2 = st.columns(2)
-    with col1 :         
+    with col1:
         models_list = ["VGG16", "Inception"]
         network = st.selectbox("Select the Model", models_list)
-    with col2 :
+    with col2:
         uploaded_file = st.file_uploader("Choose an image to classify", type=["jpg", "jpeg", "png"])
-    
-    col1, col2 = st.columns(2)    
-    with col1: clear_creation = st.button("Clear Screen")
-    with col2: check_creation = st.button("Submit")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        clear_creation = st.button("Clear Screen")
+    with col2:
+        check_creation = st.button("Submit")
 
     if check_creation:
 
-        pred = get_explanations(uploaded_file.getvalue())
+        pred = get_explanations(uploaded_file.getvalue(), network)
         val = json.loads(pred)
         st.subheader(f"Top Classification from {network}")
-        st.write(val['score'],val['prediction'], column= ('score','classification'))
+        # st.write(val['score'], val['prediction'], column=('score', 'classification'))
+        values = [network, val['prediction'], val['score']]
 
+        df = pd.DataFrame([values], columns=['Model Name', 'Image Classification', 'Score'])
+
+        st.table(df)
         bytes_data = uploaded_file.read()
-        col1,col2 = st.columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             st.subheader("Original Image")
             st.image(bytes_data)
 
         with col2:
             st.subheader("Custom Create Explainer")
-            heatmap = np.array(val['heatmap_lime'])
-            heatmap_custom = np.array(val['cie_inspiriation'])            
+            # heatmap = np.array(val['heatmap_lime'])
+            heatmap_custom = np.array(val['cie_inspiriation'])
             fig, ax = plt.subplots()
-            ax.imshow(heatmap, cmap = 'RdBu', vmin  = -heatmap_custom.max(), vmax = heatmap_custom.max())
+            ax.imshow(heatmap_custom, cmap='RdBu', vmin=-heatmap_custom.max(), vmax=heatmap_custom.max())
+            # fig.colorbar(fig)
             ax.axis('off')
             st.write(fig)
 
-        if clear_creation :
+        if clear_creation:
             st.stop()
+
 
 # Navigating to pages
 if selected == 'Benchmark':
