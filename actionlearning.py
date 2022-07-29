@@ -45,15 +45,11 @@ selected = option_menu(None, ["Home", "Benchmark", "Creations"],
 
 # ---- Home Page Function ----
 if selected == 'Home':
-    st.write("""
-    # ABOUT THE ACTION LEARNING PROJECT 
-    ## We have created this website using Streamlit and FastApi
-    ## In the Benchmark tab you can use 2 pre-trained models which are VGG16 and Inception
-    ## In the Creation tab we have created our own explainers to eplain how the model in classifying the image 
-    ## In 'Benchmark' and 'Creation' tab, the results include classification score and explainer's heatmap  
-    ## Professors : Prof. Bill MANOS and Prof. Alaa BHAKTI
-    ## Contributors : Rahul JAIKISHEN, Utsav PANDEY and Tanmay MONDKAR
-    """)
+    st.markdown("<h2 style='text-align: center; color: grey;margin-bottom:5%'>ABOUT THE ACTION LEARNING PROJECT</h1>", unsafe_allow_html=True)
+    st.markdown("<div style ='display:block;background:#8080801c;padding: 25px 15px 25px 15px;'><ul><li>The software is created using Streamlit and FastApi</li><li>In the Benchmark tab you can use 2 pre-trained models which are VGG16 and Inception and see their explanations with a LIME package</li><li>In the Creation tab we have created our own explainers to eplain how the model in classifying the image</li><li>In 'Benchmark' and 'Creation' tab, the results include classification score and explainer's heatmap </li></ul></div>", unsafe_allow_html=True)
+    st.markdown("<h6 style='margin-top:5%'><strong>Professors</strong> : Prof. Bill MANOS and Prof. Alaa BHAKTI</h6>", unsafe_allow_html=True)
+    st.markdown("<h6><strong>Contributors</strong> : Rahul JAIKISHEN, Utsav PANDEY and Tanmay MONDKAR</h6>", unsafe_allow_html=True)
+
 
 
 # ---- Benchmark Function ----
@@ -74,8 +70,8 @@ def benchmark():
         check_benchmark = st.button("Submit")
 
     if check_benchmark:
-
-        pred = get_benchmarks(uploaded_file.getvalue(), network)
+        with st.spinner('Leaving the realm of frontend. Hoping onto the API to get the explanations. Waiting for Mr. API to send us back the results ...'):
+            pred = get_benchmarks(uploaded_file.getvalue(), network)
         val = json.loads(pred)
         st.subheader(f"Top Classification from {network}")
         values = [network, val['prediction'], val['score']]
@@ -121,8 +117,8 @@ def own_creation():
         check_creation = st.button("Submit")
 
     if check_creation:
-
-        pred = get_explanations(uploaded_file.getvalue(), network)
+        with st.spinner('Leaving the realm of frontend. Hoping onto the API to get the explanations. Waiting for Mr. API to send us back the results ...'):
+            pred = get_explanations(uploaded_file.getvalue(), network)
         val = json.loads(pred)
         st.subheader(f"Top Classification from {network}")
         # st.write(val['score'], val['prediction'], column=('score', 'classification'))
